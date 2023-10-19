@@ -12,8 +12,9 @@ View(ImportationDataofChina)
 library(fpp)
 library(fpp2)
 library(TTR)
-library(ggplot2)
+
 ```
+
 # Create Times Series
 ```{r}
 IPV_ts<-ts(ImportationDataofChina$`Periodic Imporation Value`, frequency = 12,start = c(2018,9),end = c(2023,8))
@@ -21,13 +22,14 @@ IPV_ts
 attributes(IPV_ts)
 plot(IPV_ts)
 Acf(IPV_ts)
-ggseasonplot(IPV_ts)
-# Based on the Acf graph, the conclusion I could draw is that my time series don't have a trend and seasonality because when the lag goes up the auto-correlation does not goes down to 0. After lag 16, the auto correlation gose negative. As a result, my time series does not have a trend. It also dose not have the seasonality because we can't see a clear signal(pattern) in the Acf graph. From my seasonal plot, at the same month of each year, we are not sure whether it increases or decreases.It is random because the bars go to zero rapidly.It is not stationary because the Acf did not converge to zero.
+plot(decompose(IPV_ts))
+# Based on the Acf graph, the conclusion I could draw is that my time series don't have a trend and seasonality.It's not stationary as well becuase the bar doesn't stay smoothing at a high level. For my plot of time series, for the whole period, there is no upward or downward trend for my data. In other words, remain constant. Through the plot of decomposition, it shows that the seasonality has very little impact on my data
 ```
 #take Mean of all available history
 ```{r}
 mean_forecast <- meanf(IPV_ts,6)
 plot(mean_forecast)
+#The forecasts of all future values are equal to the average of the historical data.
 ```
 #Naive
 ```{r}
@@ -35,30 +37,32 @@ naive_forecast <- naive(IPV_ts,6)
 
 plot(naive_forecast)
 
-
+# The plot shows the forecast result from Naive method. It used last period value. As a result, all the forecast value equals to the value of the last month of my dataset.
 ```
 # Random Walk (add noise) drift model
 ```{r}
 rwf_forecast <- rwf(IPV_ts,6)
-
-rwf_forecast <- rwf(IPV_ts,6, drift=TRUE)
-
 plot(rwf_forecast)
+rwf_forecast
 
-
+# The plot shows that the forecast result of the random walk method. Random walk model. It seems like a straight line but the value is actually slightly different from each other.
 ```
 # Seasonal Value
 ```{r}
 snaive_forecast <- snaive(IPV_ts,6)
-
+plot(snaive_forecast)
+# The plot add the seasonality to the forecast.
 ```
-#plot all of these together
+#Put together
 ```{r}
+rwf_forecast <- rwf(IPV_ts,6)
 plot(mean_forecast)
 lines(naive_forecast$mean,col="red")
-lines(rwf_forecast$mean,col="green")
 lines(snaive_forecast$mean,col="black")
+lines(rwf_forecast$mean,col="green")
+
 ```
+
 #Drift
 ```{r}
 rwf_forecast <- rwf(IPV_ts,6, drift=TRUE)
@@ -70,14 +74,14 @@ lines(rwf_forecast$mean,col="green")
 ```
 # Moving average
 ```{r}
-plot(mean_forecast)
 MA5_forecast <- ma(IPV_ts,order=5)
 Acf(MA5_forecast)
-lines(MA5_forecast,col="pink")
 MA9_forecast <- ma(IPV_ts,order=9)
 Acf(MA9_forecast)
+plot(mean_forecast)
+lines(MA5_forecast,col="pink")
 lines(MA9_forecast,col="blue")
-# For moving average method, we choose two orders. Order 5 focuses more on the recent data of that period so it's more responsive. Order 9 focuses more on historical data so it's more smoothing than Order 5. For both Acf, no tread or seasonality for both model. And not stationary. It is random because the bars go to zero rapidly.
+# For moving average method, we choose two orders. Order 5 focuses more on the recent data of that period so it's more responsive. Order 9 focuses more on historical data so it's more smoothing than Order 5. For both Acf, no trend or seasonality for both model. And not stationary. It is random because the bars go to zero rapidly.
 #Year: Numeric Month: String Periodic Value: Numeric
 ```
 # Holtwinter
@@ -117,6 +121,7 @@ ets_forecast <- ets(IPV_ts)
 attributes(ets)
 attributes(ets_forecast)
 ets_forecast$mse
+#This is the process of fitting process of Exponential Smoothing Model.
 ```
 #Forecast
 ```{r}
